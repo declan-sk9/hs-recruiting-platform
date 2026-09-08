@@ -1,0 +1,30 @@
+# Render.com deployment blueprint.
+# Deploy with: push this repo to GitHub, then in Render dashboard choose
+# "New > Blueprint" and point it at the repo. Render reads this file and
+# provisions both resources below automatically.
+#
+# After first deploy, run schema.sql against the created database once
+# (Render dashboard > your database > Connect > psql, then \i schema.sql
+# or paste the contents in).
+
+databases:
+  - name: hs-recruiting-db
+    plan: free          # bump to "starter" or higher before real candidate data
+    databaseName: hs_recruiting
+    user: hs_recruiting
+
+services:
+  - type: web
+    name: hs-recruiting-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free           # free tier sleeps when idle — fine for testing, not for a live intake form
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hs-recruiting-db
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false       # set manually in Render dashboard — never commit real keys
+      - key: CSCS_API_KEY
+        sync: false       # leave unset until CSCS partner onboarding is complete
